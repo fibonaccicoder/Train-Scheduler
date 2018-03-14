@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-  // Initialize Firebase
+  // initialize firebase
   var config = {
     apiKey: "AIzaSyB3JxlIe7-EDammHzXz8Wh_ETjn69eYZ3g",
     authDomain: "rps-multiplayer-cd8e7.firebaseapp.com",
@@ -12,8 +12,7 @@ $(document).ready(function(){
 
   firebase.initializeApp(config);
 
-//
-//
+//initialize global variables
 
 var database = firebase.database();
 
@@ -25,24 +24,25 @@ var nextArrival="";
 var minutesAway="";
 
 
-// 2. Button for adding trains
+// button for adding trains
 $("#add-train-btn").on("click", function(event) {
   event.preventDefault();
 
-  // Grabs user input
+  // grabs user input
   var trainName = $("#train-name-input").val().trim();
   var trainDest = $("#destination-input").val().trim();
-  var trainStart = moment($("#first-train-input").val().trim(), "DD/MM/YY").format("X");
+  var trainStart = moment($("#first-train-input")).val().trim();
   var trainFrequency = $("#frequency-input").val().trim();
-  var nextArrival =$("");
-  var minutesAway=$("");
 
-  // Creates local "temporary" object for holding employee data
+
+  // creates local object for holding data
   var newTrain = {
     name: trainName,
     destination: trainDest,
     start: trainStart,
-    frequency: trainFrequency
+    frequency: trainFrequency,
+    minutesAway: minutesAway,
+    nextArrival: nextArrival
   };
 
   // pushes object of new train info to database
@@ -70,51 +70,53 @@ database.ref().on("child_added", function(childSnapshot, prevChildKey) {
 
   console.log(childSnapshot.val());
 
-  // Store everything into a variable.
+  // store everything into a variable.
   var trainName = childSnapshot.val().name;
   var trainDest = childSnapshot.val().destination;
   var trainStart = childSnapshot.val().start;
   var trainFrequency = childSnapshot.val().frequency;
 
-  // Train Info
+  // train Info
   console.log(trainName);
   console.log(trainDest);
   console.log(trainStart);
   console.log(trainFrequency);
 
-  // train start time in military time, date independent
-  var trainStartTime = moment(trainStart).format("LT");
-
   
-  // calculate frequency of trains
-  var trainFrequencyMins = moment(trainFrequency).startOf('day').fromNow(6000);
+  
+  var convertedTime = moment(firstTime, "HH:mm").subtract(1, "years");
+  var currentTime = moment();
+  var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
+  var remainder = diffTime % frequency;
+  var minutesAway = frequency - remainder;
+  var nextTrain = moment().add(minutesAway, "minutes");
+  var nextArrival = moment(nextTrain).format("hh:mm a");
 
 
-  // add each train's data into the table
-//   $("#train-table > tbody").append("<tr><td>" + trainName + "</td><td>" + trainDest + "</td><td>" +
-//   trainStartTime + "</td><td>" + trainFrequencyMins + "</td></tr>");
-// });
+ //add updated train data to table
 
-database.ref().on("value", function (data) {
-    console.log(data.val());
-    // Get reference to existing tbody element, create a new table row element
+ database.ref().on("child_added", function (childSnapshot, prevChildKey) {
+  console.log(childSnapshot.val());
+
+  var train = 0;
+
+    // get reference to existing tbody element, create a new table row element
     var tBody = $("tBody");
     var tRow = $("<tr>");
     var child = data.val();
- //update text ad save reference in td
-    var trainNameTd = $("<td>").text(child.trainNameTd);
-    var trainDestTd= $("<td>").text(child.trainDest);
-    var startDateTd = $("<td>").text(moment.unix(child.trainStart).format("LT"));
-    var trainFrequencyTd = $("<td>").text(child.trainFrequencyTd);
-    // var empStartPretty = 
-    var nextArrival = $("<td>").text(moment().diff(moment.unix(child.startDate, "X"), "months"));
-    console.log(nextArrival);
 
-    var minutesAwayTd=$("<td>").text(moment().)
-    // Append the newly created table data to the table row
-    tRow.append(empNameTd, roleTd, startDateTd, empMonthsTd, monthlyRateTd);
+ //update text ad save reference in td
+    var trainNameTd = $("<td>").text(child.trainName);
+    var trainDestTd= $("<td>").text(child.trainDest);
+    var trainStartTd = $("<td>").text(child.convertedTime);
+    var trainFrequencyTd = $("<td>").text(child.trainFrequency);
+    var nextArrivalTd = $("<td>").text(child.nextArrival);
+    var minutesAwayTd = $("<td>").text(child.minutesAway);
+
+    // append the newly created table data to the table row
+    tRow.append(trainNameTd, trainDestTd, trainStarTd, trainFrequencyTd, nextArrival);
     // Append the table row to the table body
     tBody.append(tRow);
 
 })
-});
+})
