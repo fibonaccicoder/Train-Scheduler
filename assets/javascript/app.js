@@ -29,10 +29,30 @@ $("#add-train-btn").on("click", function(event) {
   event.preventDefault();
 
   // grabs user input
-  var trainName = $("#train-name-input").val().trim();
-  var trainDest = $("#destination-input").val().trim();
-  var trainStart = moment($("#first-train-input")).val().trim();
-  var trainFrequency = $("#frequency-input").val().trim();
+  trainName = $("#train-name-input").val().trim();
+  trainDest = $("#destination-input").val().trim();
+  trainStart = $("#first-train-input").val().trim();
+  trainFrequency = $("#frequency-input").val().trim();
+
+    // Alert
+    alert("Train successfully added");
+
+    // clears text box input
+    $("#train-name-input").val("");
+    $("#destination-input").val("");
+    $("#first-train-input").val("");
+    $("#frequency-input").val("");
+  });
+
+
+    
+  var convertedTime = moment(trainStart, "HH:mm").subtract(1, "years");
+  var currentTime = moment();
+  var diffTime = moment().diff(moment(convertedTime), "minutes");
+  var remainder = diffTime % trainFrequency;
+  var minutesAway = trainFrequency - remainder;
+  var nextTrain = moment().add(minutesAway, "minutes");
+  var nextArrival = moment(nextTrain).format("hh:mm a");
 
 
   // creates local object for holding data
@@ -40,6 +60,7 @@ $("#add-train-btn").on("click", function(event) {
     name: trainName,
     destination: trainDest,
     start: trainStart,
+    remainder:remainder,
     frequency: trainFrequency,
     minutesAway: minutesAway,
     nextArrival: nextArrival
@@ -53,45 +74,20 @@ $("#add-train-btn").on("click", function(event) {
   console.log(newTrain.destination);
   console.log(newTrain.start);
   console.log(newTrain.frequency);
-
-  // Alert
-  alert("Train successfully added");
-
-  // clears text box input
-  $("#train-name-input").val("");
-  $("#destination-input").val("");
-  $("#first-train-input").val("");
-  $("#frequency-input").val("");
-});
+  console.log(newTrain.minutesAway);
+  console.log(newTrain.nextArrival)
 
 
 //adds train to database and row to html after successful entry by user
-database.ref().on("child_added", function(childSnapshot, prevChildKey) {
+// database.ref().on("child_added", function(childSnapshot, prevChildKey) {
 
-  console.log(childSnapshot.val());
+//   console.log(childSnapshot.val());
 
-  // store everything into a variable.
-  var trainName = childSnapshot.val().name;
-  var trainDest = childSnapshot.val().destination;
-  var trainStart = childSnapshot.val().start;
-  var trainFrequency = childSnapshot.val().frequency;
-
-  // train Info
-  console.log(trainName);
-  console.log(trainDest);
-  console.log(trainStart);
-  console.log(trainFrequency);
-
-  
-  
-  var convertedTime = moment(firstTime, "HH:mm").subtract(1, "years");
-  var currentTime = moment();
-  var diffTime = moment().diff(moment(firstTimeConverted), "minutes");
-  var remainder = diffTime % frequency;
-  var minutesAway = frequency - remainder;
-  var nextTrain = moment().add(minutesAway, "minutes");
-  var nextArrival = moment(nextTrain).format("hh:mm a");
-
+  // // store everything into a variable.
+  // var trainName = childSnapshot.val().name;
+  // var trainDest = childSnapshot.val().destination;
+  // var trainStart = childSnapshot.val().start;
+  // var trainFrequency = childSnapshot.val().frequency;
 
  //add updated train data to table
 
@@ -118,5 +114,6 @@ database.ref().on("child_added", function(childSnapshot, prevChildKey) {
     // Append the table row to the table body
     tBody.append(tRow);
 
-})
+ })
+
 })
